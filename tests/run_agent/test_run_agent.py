@@ -16,6 +16,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from agent.codex_responses_adapter import _chat_messages_to_responses_input, _normalize_codex_response, _preflight_codex_input_items
 
 import run_agent
 from run_agent import AIAgent
@@ -4170,7 +4171,7 @@ class TestNormalizeCodexDictArguments:
         json.dumps, not str(), so downstream json.loads() succeeds."""
         args_dict = {"query": "weather in NYC", "units": "celsius"}
         response = self._make_codex_response("function_call", args_dict)
-        msg, _ = agent._normalize_codex_response(response)
+        msg, _ = _normalize_codex_response(response)
         tc = msg.tool_calls[0]
         parsed = json.loads(tc.function.arguments)
         assert parsed == args_dict
@@ -4179,7 +4180,7 @@ class TestNormalizeCodexDictArguments:
         """dict arguments from custom_tool_call must also use json.dumps."""
         args_dict = {"path": "/tmp/test.txt", "content": "hello"}
         response = self._make_codex_response("custom_tool_call", args_dict)
-        msg, _ = agent._normalize_codex_response(response)
+        msg, _ = _normalize_codex_response(response)
         tc = msg.tool_calls[0]
         parsed = json.loads(tc.function.arguments)
         assert parsed == args_dict
@@ -4188,7 +4189,7 @@ class TestNormalizeCodexDictArguments:
         """String arguments must pass through without modification."""
         args_str = '{"query": "test"}'
         response = self._make_codex_response("function_call", args_str)
-        msg, _ = agent._normalize_codex_response(response)
+        msg, _ = _normalize_codex_response(response)
         tc = msg.tool_calls[0]
         assert tc.function.arguments == args_str
 
